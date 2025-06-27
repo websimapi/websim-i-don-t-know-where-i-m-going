@@ -55,7 +55,10 @@ if (SpeechRecognition) {
     recognition.onend = () => {
         // Restart recognition if game is still in progress and not finished
         if (gameInProgress && currentStep < routeInstructions.length) {
-            recognition.start();
+            // Add a small delay to prevent rapid, unwanted restarts on error
+            setTimeout(() => {
+                if (gameInProgress) recognition.start();
+            }, 500);
         }
     };
 
@@ -76,6 +79,14 @@ async function setupGame() {
     loadingOverlay.classList.remove('hidden');
     startButton.disabled = true;
     botStatusEl.textContent = "Planning a trip...";
+    userCommandEl.textContent = '...';
+
+    // Clear previous route data from UI
+    if (!gameInProgress) { // Only clear if it's a fresh start
+        startCityEl.textContent = "";
+        endCityEl.textContent = "";
+        currentInstructionEl.textContent = "...";
+    }
 
     try {
         const journey = await getJourneyFromAI();
@@ -101,6 +112,8 @@ function setupRouting(startPoint, endPoint) {
     if (routingControl) {
         map.removeControl(routingControl);
     }
+
+    currentStep = 0; // Reset step count here before routing
 
     routingControl = L.Routing.control({
         waypoints: [startPoint, endPoint],
@@ -138,7 +151,6 @@ function setupRouting(startPoint, endPoint) {
         instructionsDiv.classList.add('hidden');
         gameInfoDiv.classList.remove('hidden');
         
-        currentStep = 0;
         gameInProgress = true;
         isBotMoving = false;
         
@@ -147,6 +159,15 @@ function setupRouting(startPoint, endPoint) {
         loadingOverlay.classList.add('hidden');
         if (recognition) recognition.start();
     }).addTo(map); // Add to map here to trigger routing
+
+    routingControl.on('routingerror', function(e) {
+        console.error("Routing error:", e.error);
+        botStatusEl.textContent = `Could not find a route. Please try again.`;
+        loadingOverlay.classList.add('hidden');
+        startButton.textContent = "Try Again";
+        startButton.disabled = false;
+        gameInProgress = false;
+    });
 }
 
 function updateInstruction() {

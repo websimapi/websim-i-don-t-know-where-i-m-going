@@ -38,6 +38,7 @@ h1 {
     color: white;
     border-radius: 5px;
     width: 100%;
+    margin-top: 10px;
 }
 
 #start-button:disabled {
@@ -51,6 +52,12 @@ h1 {
 
 #game-info p {
     margin: 8px 0;
+}
+
+#journey-info {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 10px;
 }
 
 #current-instruction-container {
@@ -68,6 +75,16 @@ h1 {
 #current-instruction {
     font-weight: bold;
     margin-top: 5px !important;
+}
+
+.status-box {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+.status-box p {
+    margin: 5px 0;
 }
 
 #bot-status, #user-command {
@@ -110,4 +127,3 @@ h1 {
 .leaflet-routing-container {
     display: none; /* Hide the default routing control */
 }
-

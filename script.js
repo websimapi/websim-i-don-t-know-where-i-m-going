@@ -53,8 +53,8 @@ if (SpeechRecognition) {
     };
     
     recognition.onend = () => {
-        // Restart recognition if game is still in progress
-        if (gameInProgress) {
+        // Restart recognition if game is still in progress and not finished
+        if (gameInProgress && currentStep < routeInstructions.length) {
             recognition.start();
         }
     };
@@ -110,7 +110,7 @@ function setupRouting(startPoint, endPoint) {
         lineOptions: {
             styles: [{color: 'blue', opacity: 0.6, weight: 6}]
         }
-    }).addTo(map);
+    });
 
     routingControl.on('routesfound', function(e) {
         const routes = e.routes;
@@ -146,7 +146,7 @@ function setupRouting(startPoint, endPoint) {
         botStatusEl.textContent = "Ready for your first command!";
         loadingOverlay.classList.add('hidden');
         if (recognition) recognition.start();
-    });
+    }).addTo(map); // Add to map here to trigger routing
 }
 
 function updateInstruction() {
@@ -176,9 +176,9 @@ async function checkCommand(command) {
                 content: `You are an AI assistant for a map game. The user gives a voice command to a bot. The bot has a current navigation instruction. Determine if the user's command is a reasonable match for the instruction. Respond with JSON: {"match": boolean}. For example, if instruction is "Turn left onto Main Street" and user says "okay turn left", that's a match. If user says "go straight", it's not a match. If user says "go" or "start", it is a match for the first instruction ("Head north...").`
             }, {
                 role: "user",
-                content: `Instruction: "${currentInstructionText}". User command: "${command}"`,
-                json: true
-            }]
+                content: `Instruction: "${currentInstructionText}". User command: "${command}"`
+            }],
+            json: true
         });
 
         const result = JSON.parse(completion.content);
@@ -232,9 +232,9 @@ async function getJourneyFromAI() {
             content: `You are a travel planner. Pick a random continent (from Africa, Asia, Europe, North America, South America, Oceania). Then, pick two different major cities from that continent. Provide the result as JSON with this schema: {"start": {"city": "City, Country", "lat": number, "lon": number}, "end": {"city": "City, Country", "lat": number, "lon": number}}. Do not add any other text.`
         }, {
             role: "user",
-            content: "Give me a new random journey.",
-            json: true
+            content: "Give me a new random journey."
         }],
+        json: true
     });
     return JSON.parse(completion.content);
 }
@@ -251,4 +251,3 @@ startButton.addEventListener('click', () => {
 
 // --- Initialization ---
 initializeMap();
-
